@@ -1,0 +1,21 @@
+@startuml
+actor Usuario
+participant "Apresentação (JavaFX)" as UI
+participant "Serviço de Coleta" as Service
+participant "Repositório" as Repository
+
+Usuario -> UI: registra coleta
+UI -> Service: registrarColeta(containerId, coletaId, tipoResiduo, volume)
+Service -> Repository: buscarConteiner(containerId)
+Repository --> Service: Conteiner
+Service -> Service: valida capacidade e prioridade
+alt tudo válido
+  Service -> Repository: salvarColeta(coleta)
+  Repository --> Service: confirmação
+  Service --> UI: sucesso
+  UI --> Usuario: exibe mensagem de sucesso
+else erro
+  Service --> UI: IllegalArgumentException
+  UI --> Usuario: exibe mensagem de erro
+end
+@enduml

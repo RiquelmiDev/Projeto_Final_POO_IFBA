@@ -1,0 +1,36 @@
+@startuml
+class Conteiner {
+  - id: String
+  - capacidadeMaxima: double
+  - tipo: String
+  - localizacao: String
+  + Conteiner(id, capacidadeMaxima, tipo, localizacao)
+}
+
+class Coleta {
+  - id: String
+  - containerId: String
+  - tipoResiduo: TipoResiduo
+  - volume: double
+  - dataHora: LocalDateTime
+  + Coleta(id, containerId, tipoResiduo, volume)
+}
+
+class Relatorio {
+  - totalColetas: int
+  - volumeTotal: double
+  - taxaReciclagem: double
+  + Relatorio(totalColetas, volumeTotal, taxaReciclagem)
+}
+
+enum TipoResiduo {
+  PERIGOSO
+  RECICLAVEL
+  ORGANICO
+  NAO_RECICLAVEL
+}
+
+Conteiner --> Coleta
+Coleta --> TipoResiduo
+Relatorio --> Coleta
+@enduml
