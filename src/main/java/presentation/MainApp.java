@@ -9,6 +9,8 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -25,6 +27,8 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 public class MainApp extends Application {
+
+    private static final DateTimeFormatter DATA_HORA_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
     private final ColetaRepository repository = new ColetaRepository();
     private final ColetaService service = new ColetaService(repository);
@@ -59,8 +63,8 @@ public class MainApp extends Application {
         Button registrarColetaButton = new Button("Registrar coleta");
         registrarColetaButton.setOnAction(event -> registrarColeta());
 
-        Button atualizarRelatorioButton = new Button("Gerar relatório");
-        atualizarRelatorioButton.setOnAction(event -> atualizarRelatorio());
+        Button atualizarRelatorioButton = new Button("Atualizar relatório");
+        atualizarRelatorioButton.setOnAction(event -> atualizarRelatorioManual());
 
         Label titulo = new Label("Sistema de Gestão de Resíduos Sólidos");
         titulo.setFont(Font.font("Arial", FontWeight.BOLD, 24));
@@ -112,9 +116,11 @@ public class MainApp extends Application {
                 atualizarRelatorioButton
         );
 
-        relatorioArea.setPrefHeight(180);
+        relatorioArea.setPrefHeight(260);
         logList.setPrefHeight(180);
         relatorioArea.setEditable(false);
+        relatorioArea.setWrapText(true);
+        relatorioArea.setStyle("-fx-font-family: Consolas; -fx-font-size: 12px;");
         logList.setEditable(false);
 
         HBox cardsBox = new HBox(12, containerBox, coletaBox, relatorioBox);
@@ -176,11 +182,13 @@ public class MainApp extends Application {
 
     private void atualizarRelatorio() {
         Relatorio relatorio = service.gerarRelatorio();
-        relatorioArea.setText(
-                "Total de coletas: " + relatorio.getTotalColetas() + "\n" +
-                "Volume total coletado: " + relatorio.getVolumeTotal() + "\n" +
-                "Taxa de reciclagem: " + relatorio.getTaxaReciclagem()
-        );
+        relatorioArea.setText(relatorio.toString());
+    }
+
+    private void atualizarRelatorioManual() {
+        atualizarRelatorio();
+        String momento = LocalDateTime.now().format(DATA_HORA_FORMATTER);
+        logList.getItems().add("Relatório atualizado manualmente em " + momento + ".");
     }
 
     private void atualizarListaConteineres() {
