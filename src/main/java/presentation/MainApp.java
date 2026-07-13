@@ -66,7 +66,7 @@ public class MainApp extends Application {
         Button atualizarRelatorioButton = new Button("Atualizar relatório");
         atualizarRelatorioButton.setOnAction(event -> atualizarRelatorioManual());
 
-        Label titulo = new Label("Sistema de Gestão de Resíduos Sólidos");
+        Label titulo = new Label("EcoCiclo SYS");
         titulo.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         titulo.setTextFill(Color.web("#eb8a0c"));
 
