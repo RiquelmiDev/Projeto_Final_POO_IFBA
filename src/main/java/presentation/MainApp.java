@@ -68,7 +68,7 @@ public class MainApp extends Application {
 
         Label titulo = new Label("EcoCiclo SYS");
         titulo.setFont(Font.font("Arial", FontWeight.BOLD, 24));
-        titulo.setTextFill(Color.web("#eb8a0c"));
+        titulo.setTextFill(Color.web("#53eb0c"));
 
         Label subTitulo = new Label("Gestão de coleta, reciclagem e relatórios");
         subTitulo.setTextFill(Color.web("#4b5563"));
