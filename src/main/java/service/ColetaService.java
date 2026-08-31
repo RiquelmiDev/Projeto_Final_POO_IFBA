@@ -1,6 +1,7 @@
 package service;
 
 import data.ColetaRepository;
+import data.ConteinerRepository;
 import exception.RegraDeNegocioException;
 import model.Coleta;
 import model.Conteiner;
@@ -18,10 +19,16 @@ import java.util.stream.Collectors;
 
 public class ColetaService extends GenericServiceImpl<Coleta, String> {
     private final ColetaRepository repository;
+    private final ConteinerRepository conteinerRepository;
 
     public ColetaService(ColetaRepository repository) {
+        this(repository, new ConteinerRepository());
+    }
+
+    public ColetaService(ColetaRepository repository, ConteinerRepository conteinerRepository) {
         super(repository);
         this.repository = repository;
+        this.conteinerRepository = conteinerRepository;
     }
 
     @Override
@@ -45,11 +52,11 @@ public class ColetaService extends GenericServiceImpl<Coleta, String> {
         conteiner.setCriadoPor(responsavel);
         conteiner.setUpdatedAt(LocalDateTime.now());
         conteiner.setAtualizadoPor(responsavel);
-        repository.salvarConteiner(conteiner);
+        conteinerRepository.salvarConteiner(conteiner);
     }
 
     public void atualizarContainer(String id, double novaCapacidadeMaxima, String novoTipo, String novaLocalizacao, String usuarioResponsavel) {
-        Conteiner conteiner = repository.buscarConteiner(id);
+        Conteiner conteiner = conteinerRepository.buscarConteiner(id);
         if (conteiner == null) {
             throw new IllegalArgumentException("Conteiner não encontrado para atualização.");
         }
@@ -61,7 +68,7 @@ public class ColetaService extends GenericServiceImpl<Coleta, String> {
         atualizado.setCriadoPor(conteiner.getCriadoPor() == null ? "SISTEMA" : conteiner.getCriadoPor());
         atualizado.setUpdatedAt(LocalDateTime.now());
         atualizado.setAtualizadoPor((usuarioResponsavel == null || usuarioResponsavel.isBlank()) ? "SISTEMA" : usuarioResponsavel.trim());
-        repository.salvarConteiner(atualizado);
+        conteinerRepository.salvarConteiner(atualizado);
     }
 
     public void registrarColeta(String containerId, String coletaId, TipoResiduo tipoResiduo, double volume) {
@@ -69,7 +76,7 @@ public class ColetaService extends GenericServiceImpl<Coleta, String> {
     }
 
     public void registrarColeta(String containerId, String coletaId, TipoResiduo tipoResiduo, double volume, String usuarioResponsavel) {
-        Conteiner conteiner = repository.buscarConteiner(containerId);
+        Conteiner conteiner = conteinerRepository.buscarConteiner(containerId);
         if (conteiner == null) {
             throw new IllegalArgumentException("Conteiner não encontrado.");
         }
@@ -112,7 +119,7 @@ public class ColetaService extends GenericServiceImpl<Coleta, String> {
 
     public Relatorio gerarRelatorio() {
         List<Coleta> coletas = repository.listarColetas();
-        List<Conteiner> conteineres = repository.listarConteineres();
+        List<Conteiner> conteineres = conteinerRepository.listarConteineres();
 
         double volumeTotal = coletas.stream().mapToDouble(Coleta::getVolume).sum();
         long reciclaveis = coletas.stream()

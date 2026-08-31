@@ -10,6 +10,7 @@ import service.AuditoriaService;
 import service.ColetaService;
 import service.UsuarioService;
 import data.ColetaRepository;
+import data.ConteinerRepository;
 import data.UsuarioRepository;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -43,7 +44,8 @@ public class MainApp extends Application {
     private static final DateTimeFormatter DATA_HORA_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
     private final ColetaRepository repository = new ColetaRepository();
-    private final ColetaService coletaService = new ColetaService(repository);
+    private final ConteinerRepository conteinerRepository = new ConteinerRepository();
+    private final ColetaService coletaService = new ColetaService(repository, conteinerRepository);
     private final UsuarioService usuarioService = new UsuarioService(new UsuarioRepository());
 
     private Stage primaryStage;
@@ -70,6 +72,7 @@ public class MainApp extends Application {
 
     private final TextField loginUsernameField = new TextField();
     private final PasswordField loginPasswordField = new PasswordField();
+    private final java.util.List<String> historicoAtividades = new java.util.ArrayList<>();
 
     @Override
     public void start(Stage stage) {
@@ -627,7 +630,7 @@ public class MainApp extends Application {
 
             coletaService.cadastrarContainer(id, capacidade, tipo, localizacao, responsavel);
             atualizarListaConteineres();
-            logList.getItems().add("Conteiner " + id + " cadastrado com sucesso.");
+            registrarAtividade("Conteiner " + id + " cadastrado com sucesso.");
             limparCamposContainer();
         } catch (Exception ex) {
             mostrarErro(ex.getMessage());
@@ -643,7 +646,7 @@ public class MainApp extends Application {
             String responsavel = usuarioLogado == null ? "SISTEMA" : usuarioLogado.getUsername();
 
             coletaService.registrarColeta(containerId, coletaId, tipoResiduo, volume, responsavel);
-            logList.getItems().add("Coleta " + coletaId + " registrada com sucesso.");
+            registrarAtividade("Coleta " + coletaId + " registrada com sucesso.");
             limparCamposColeta();
             atualizarRelatorio();
         } catch (Exception ex) {
@@ -658,13 +661,44 @@ public class MainApp extends Application {
 
     private void atualizarRelatorioManual() {
         atualizarRelatorio();
-        String momento = LocalDateTime.now().format(DATA_HORA_FORMATTER);
-        logList.getItems().add("Relatório atualizado manualmente em " + momento + ".");
+        registrarAtividade("Relatório atualizado manualmente.");
+    }
+
+    private void registrarAtividade(String mensagem) {
+        String atividade = String.format("%s | %s",
+                LocalDateTime.now().format(DATA_HORA_FORMATTER),
+                mensagem);
+
+        historicoAtividades.add(0, atividade);
+        logList.getItems().setAll(
+                historicoAtividades.stream()
+                        .sorted((a, b) -> compararAtividadesRecentes(b, a))
+                        .toList()
+        );
+    }
+
+    private int compararAtividadesRecentes(String atividadeA, String atividadeB) {
+        LocalDateTime dataHoraA = extrairDataHora(atividadeA);
+        LocalDateTime dataHoraB = extrairDataHora(atividadeB);
+        return dataHoraA.compareTo(dataHoraB);
+    }
+
+    private LocalDateTime extrairDataHora(String atividade) {
+        if (atividade == null || !atividade.contains(" | ")) {
+            return LocalDateTime.MIN;
+        }
+
+        String dataHoraTexto = atividade.substring(0, atividade.indexOf(" | "));
+        try {
+            return LocalDateTime.parse(dataHoraTexto, DATA_HORA_FORMATTER);
+        } catch (Exception ex) {
+            return LocalDateTime.MIN;
+        }
     }
 
     private void atualizarListaConteineres() {
         containerCombo.getItems().clear();
-        for (Conteiner conteiner : repository.listarConteineres()) {
+        for (Conteiner conteiner : conteinerRepository.listarConteineres()) {
             containerCombo.getItems().add(conteiner.getId());
         }
     }
@@ -680,7 +714,7 @@ public class MainApp extends Application {
         auditoriaList.getItems().clear();
         AuditoriaService auditoriaService = new AuditoriaService();
         auditoriaList.getItems().addAll(
-                auditoriaService.listarAuditoria(usuarioService.listarUsuarios(), repository.listarConteineres(), repository.listarColetas()).stream()
+                auditoriaService.listarAuditoria(usuarioService.listarUsuarios(), conteinerRepository.listarConteineres(), repository.listarColetas()).stream()
                         .map(registro -> String.format("[%s] %s | Criado por: %s em %s | Atualizado por: %s em %s",
                                 registro.getTipo(),
                                 registro.getIdentificador(),
