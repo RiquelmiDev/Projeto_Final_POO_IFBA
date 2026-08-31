@@ -4,6 +4,7 @@ participant "MainApp (JavaFX)" as UI
 participant "UsuarioService" as UsuarioService
 participant "UsuarioRepository" as UsuarioRepo
 participant "ColetaService" as ColetaService
+participant "ConteinerRepository" as ConteinerRepo
 participant "ColetaRepository" as ColetaRepo
 participant "AuditoriaService" as AuditoriaService
 
@@ -29,15 +30,15 @@ UI --> Usuario: mensagem de cadastro
 
 Usuario -> UI: cadastra contêiner
 UI -> ColetaService: cadastrarContainer(id, capacidade, tipo, localizacao, usuarioLogado)
-ColetaService -> ColetaRepo: salvarConteiner(conteiner)
-ColetaRepo --> ColetaService: confirmação
+ColetaService -> ConteinerRepo: salvarConteiner(conteiner)
+ConteinerRepo --> ColetaService: confirmação
 ColetaService --> UI: sucesso
 UI --> Usuario: mensagem de cadastro do contêiner
 
 Usuario -> UI: registra coleta
 UI -> ColetaService: registrarColeta(containerId, coletaId, tipoResiduo, volume, usuarioLogado)
-ColetaService -> ColetaRepo: buscarConteiner(containerId)
-ColetaRepo --> ColetaService: Conteiner
+ColetaService -> ConteinerRepo: buscarConteiner(containerId)
+ConteinerRepo --> ColetaService: Conteiner
 ColetaService -> ColetaService: valida capacidade máxima
 alt operação válida
   ColetaService -> ColetaRepo: salvarColeta(coleta)

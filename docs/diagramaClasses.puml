@@ -126,10 +126,14 @@ class UsuarioRepository {
   + remover(username)
 }
 
-class ColetaRepository {
+class ConteinerRepository {
   + salvarConteiner(conteiner)
   + buscarConteiner(id): Conteiner
   + listarConteineres(): List<Conteiner>
+  + removerConteiner(id)
+}
+
+class ColetaRepository {
   + salvarColeta(coleta)
   + listarColetas(): List<Coleta>
   + totalVolumeColetadoPorContainer(id): double
@@ -167,10 +171,13 @@ GenericDAO <|.. GenericDAOImpl
 GenericService <|.. GenericServiceImpl
 GenericDAOImpl <|-- UsuarioRepository
 GenericDAOImpl <|-- ColetaRepository
+GenericDAOImpl <|-- ConteinerRepository
 GenericServiceImpl <|-- UsuarioService
 GenericServiceImpl <|-- ColetaService
 
 MainApp --> UsuarioService
 MainApp --> ColetaService
+MainApp --> ConteinerRepository
+MainApp --> ColetaRepository
 MainApp --> AuditoriaService
 @enduml
