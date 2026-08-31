@@ -1,5 +1,6 @@
 package presentation;
 
+import business.AuditoriaService;
 import business.Coleta;
 import business.ColetaService;
 import business.Conteiner;
@@ -43,8 +44,8 @@ public class MainApp extends Application {
     private static final DateTimeFormatter DATA_HORA_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
     private final ColetaRepository repository = new ColetaRepository();
-    private final GenericService<Coleta, String> coletaService = new ColetaService(repository);
-    private final GenericService<Usuario, String> usuarioService = new UsuarioService(new UsuarioRepository());
+    private final ColetaService coletaService = new ColetaService(repository);
+    private final UsuarioService usuarioService = new UsuarioService(new UsuarioRepository());
 
     private Stage primaryStage;
     private Usuario usuarioLogado;
@@ -61,6 +62,7 @@ public class MainApp extends Application {
     private final TextArea relatorioArea = new TextArea();
     private final ListView<String> logList = new ListView<>();
     private final ListView<String> usuariosList = new ListView<>();
+    private final ListView<String> auditoriaList = new ListView<>();
 
     private final TextField usuarioNomeField = new TextField();
     private final TextField usuarioUsernameField = new TextField();
@@ -240,12 +242,22 @@ public class MainApp extends Application {
         Button coletasButton = new Button("Coletas");
         coletasButton.setStyle("-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18 8 18;");
 
+        Button auditoriaButton = new Button("Auditoria");
+        auditoriaButton.setStyle("-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18 8 18;");
+
         if (usuarioLogado.getPerfil() != PerfilUsuario.ADMIN) {
             usuariosButton.setDisable(true);
             usuariosButton.setOpacity(0.55);
+            usuariosButton.setVisible(false);
+            usuariosButton.setManaged(false);
+
+            auditoriaButton.setDisable(true);
+            auditoriaButton.setOpacity(0.55);
+            auditoriaButton.setVisible(false);
+            auditoriaButton.setManaged(false);
         }
 
-        HBox modulosNav = new HBox(12, dashboardButton, conteineresButton, coletasButton, usuariosButton);
+        HBox modulosNav = new HBox(12, dashboardButton, conteineresButton, coletasButton, usuariosButton, auditoriaButton);
         modulosNav.setAlignment(Pos.CENTER_LEFT);
         modulosNav.setPadding(new Insets(18, 20, 0, 20));
 
@@ -253,15 +265,17 @@ public class MainApp extends Application {
         VBox usuariosContent = criarUsuariosContent();
         VBox conteineresContent = criarConteineresContent();
         VBox coletasContent = criarColetasContent();
-        StackPane conteudoModulo = new StackPane(dashboardContent, usuariosContent, conteineresContent, coletasContent);
+        VBox auditoriaContent = criarAuditoriaContent();
+        StackPane conteudoModulo = new StackPane(dashboardContent, usuariosContent, conteineresContent, coletasContent, auditoriaContent);
         conteudoModulo.setPadding(new Insets(0, 18, 18, 18));
 
-        dashboardButton.setOnAction(event -> trocarTelaModulo("dashboard", conteudoModulo, dashboardContent, usuariosContent, conteineresContent, coletasContent, dashboardButton, usuariosButton, conteineresButton, coletasButton));
-        usuariosButton.setOnAction(event -> trocarTelaModulo("usuarios", conteudoModulo, dashboardContent, usuariosContent, conteineresContent, coletasContent, dashboardButton, usuariosButton, conteineresButton, coletasButton));
-        conteineresButton.setOnAction(event -> trocarTelaModulo("conteineres", conteudoModulo, dashboardContent, usuariosContent, conteineresContent, coletasContent, dashboardButton, usuariosButton, conteineresButton, coletasButton));
-        coletasButton.setOnAction(event -> trocarTelaModulo("coletas", conteudoModulo, dashboardContent, usuariosContent, conteineresContent, coletasContent, dashboardButton, usuariosButton, conteineresButton, coletasButton));
+        dashboardButton.setOnAction(event -> trocarTelaModulo("dashboard", conteudoModulo, dashboardContent, usuariosContent, conteineresContent, coletasContent, auditoriaContent, dashboardButton, usuariosButton, conteineresButton, coletasButton, auditoriaButton));
+        usuariosButton.setOnAction(event -> trocarTelaModulo("usuarios", conteudoModulo, dashboardContent, usuariosContent, conteineresContent, coletasContent, auditoriaContent, dashboardButton, usuariosButton, conteineresButton, coletasButton, auditoriaButton));
+        conteineresButton.setOnAction(event -> trocarTelaModulo("conteineres", conteudoModulo, dashboardContent, usuariosContent, conteineresContent, coletasContent, auditoriaContent, dashboardButton, usuariosButton, conteineresButton, coletasButton, auditoriaButton));
+        coletasButton.setOnAction(event -> trocarTelaModulo("coletas", conteudoModulo, dashboardContent, usuariosContent, conteineresContent, coletasContent, auditoriaContent, dashboardButton, usuariosButton, conteineresButton, coletasButton, auditoriaButton));
+        auditoriaButton.setOnAction(event -> trocarTelaModulo("auditoria", conteudoModulo, dashboardContent, usuariosContent, conteineresContent, coletasContent, auditoriaContent, dashboardButton, usuariosButton, conteineresButton, coletasButton, auditoriaButton));
 
-        trocarTelaModulo("dashboard", conteudoModulo, dashboardContent, usuariosContent, conteineresContent, coletasContent, dashboardButton, usuariosButton, conteineresButton, coletasButton);
+        trocarTelaModulo("dashboard", conteudoModulo, dashboardContent, usuariosContent, conteineresContent, coletasContent, auditoriaContent, dashboardButton, usuariosButton, conteineresButton, coletasButton, auditoriaButton);
 
         VBox content = new VBox(0, modulosNav, conteudoModulo);
         content.setStyle("-fx-background-color: linear-gradient(to bottom, #f8fbff, #eef4f9);");
@@ -367,11 +381,33 @@ public class MainApp extends Application {
         return usuariosContent;
     }
 
-    private void trocarTelaModulo(String modulo, StackPane conteudoModulo, VBox dashboardContent, VBox usuariosContent, VBox conteineresContent, VBox coletasContent, Button dashboardButton, Button usuariosButton, Button conteineresButton, Button coletasButton) {
+    private VBox criarAuditoriaContent() {
+        Label tituloAuditoria = new Label("Auditoria do Sistema");
+        tituloAuditoria.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+
+        Button atualizarAuditoriaButton = new Button("Atualizar auditoria");
+        atualizarAuditoriaButton.setOnAction(event -> atualizarAuditoria());
+
+        VBox auditoriaBox = criarBloco(tituloAuditoria, 8,
+                atualizarAuditoriaButton,
+                auditoriaList
+        );
+        auditoriaList.setPrefHeight(420);
+
+        VBox auditoriaContent = new VBox(16, auditoriaBox);
+        auditoriaContent.setPadding(new Insets(18));
+        auditoriaContent.setVisible(false);
+        auditoriaContent.setManaged(false);
+        atualizarAuditoria();
+        return auditoriaContent;
+    }
+
+    private void trocarTelaModulo(String modulo, StackPane conteudoModulo, VBox dashboardContent, VBox usuariosContent, VBox conteineresContent, VBox coletasContent, VBox auditoriaContent, Button dashboardButton, Button usuariosButton, Button conteineresButton, Button coletasButton, Button auditoriaButton) {
         boolean mostrarDashboard = "dashboard".equals(modulo);
         boolean mostrarUsuarios = "usuarios".equals(modulo);
         boolean mostrarConteineres = "conteineres".equals(modulo);
         boolean mostrarColetas = "coletas".equals(modulo);
+        boolean mostrarAuditoria = "auditoria".equals(modulo);
 
         dashboardContent.setVisible(mostrarDashboard);
         dashboardContent.setManaged(mostrarDashboard);
@@ -381,11 +417,14 @@ public class MainApp extends Application {
         conteineresContent.setManaged(mostrarConteineres);
         coletasContent.setVisible(mostrarColetas);
         coletasContent.setManaged(mostrarColetas);
+        auditoriaContent.setVisible(mostrarAuditoria);
+        auditoriaContent.setManaged(mostrarAuditoria);
 
         dashboardButton.setStyle(mostrarDashboard ? "-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18 8 18;" : "-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18 8 18;");
         conteineresButton.setStyle(mostrarConteineres ? "-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18 8 18;" : "-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18 8 18;");
         coletasButton.setStyle(mostrarColetas ? "-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18 8 18;" : "-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18 8 18;");
         usuariosButton.setStyle(mostrarUsuarios ? "-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18 8 18;" : "-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18 8 18;");
+        auditoriaButton.setStyle(mostrarAuditoria ? "-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18 8 18;" : "-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18 8 18;");
 
         conteudoModulo.setVisible(true);
         conteudoModulo.setManaged(true);
@@ -500,7 +539,8 @@ public class MainApp extends Application {
         Button salvarButton = new Button("Salvar");
         salvarButton.setOnAction(event -> {
             try {
-                usuarioService.cadastrarUsuario(usernameField.getText(), senhaField.getText(), perfilField.getValue(), nomeField.getText());
+                String responsavel = usuarioLogado == null ? "SISTEMA" : usuarioLogado.getUsername();
+                usuarioService.cadastrarUsuario(usernameField.getText(), senhaField.getText(), perfilField.getValue(), nomeField.getText(), responsavel);
                 atualizarListaUsuarios();
                 janela.close();
                 mostrarInfo("Usuário cadastrado com sucesso!");
@@ -544,8 +584,9 @@ public class MainApp extends Application {
             String username = usuarioUsernameField.getText().trim();
             String senha = usuarioSenhaField.getText();
             PerfilUsuario perfil = usuarioPerfilCombo.getValue();
+            String responsavel = usuarioLogado == null ? "SISTEMA" : usuarioLogado.getUsername();
 
-            usuarioService.cadastrarUsuario(username, senha, perfil, nome);
+            usuarioService.cadastrarUsuario(username, senha, perfil, nome, responsavel);
             atualizarListaUsuarios();
             limparCamposCadastroUsuario();
             mostrarInfo("Cadastro realizado com sucesso.");
@@ -576,8 +617,9 @@ public class MainApp extends Application {
             double capacidade = Double.parseDouble(capacidadeField.getText().trim());
             String tipo = tipoContainerField.getText().trim();
             String localizacao = localizacaoField.getText().trim();
+            String responsavel = usuarioLogado == null ? "SISTEMA" : usuarioLogado.getUsername();
 
-            coletaService.cadastrarContainer(id, capacidade, tipo, localizacao);
+            coletaService.cadastrarContainer(id, capacidade, tipo, localizacao, responsavel);
             atualizarListaConteineres();
             logList.getItems().add("Conteiner " + id + " cadastrado com sucesso.");
             limparCamposContainer();
@@ -592,8 +634,9 @@ public class MainApp extends Application {
             String coletaId = coletaIdField.getText().trim();
             TipoResiduo tipoResiduo = tipoResiduoCombo.getValue();
             double volume = Double.parseDouble(volumeField.getText().trim());
+            String responsavel = usuarioLogado == null ? "SISTEMA" : usuarioLogado.getUsername();
 
-            coletaService.registrarColeta(containerId, coletaId, tipoResiduo, volume);
+            coletaService.registrarColeta(containerId, coletaId, tipoResiduo, volume, responsavel);
             logList.getItems().add("Coleta " + coletaId + " registrada com sucesso.");
             limparCamposColeta();
             atualizarRelatorio();
@@ -625,6 +668,22 @@ public class MainApp extends Application {
         for (Usuario usuario : usuarioService.listarUsuarios()) {
             usuariosList.getItems().add(usuario.getUsername() + " | " + usuario.getNome() + " | " + usuario.getPerfil());
         }
+    }
+
+    private void atualizarAuditoria() {
+        auditoriaList.getItems().clear();
+        AuditoriaService auditoriaService = new AuditoriaService();
+        auditoriaList.getItems().addAll(
+                auditoriaService.listarAuditoria(usuarioService.listarUsuarios(), repository.listarConteineres(), repository.listarColetas()).stream()
+                        .map(registro -> String.format("[%s] %s | Criado por: %s em %s | Atualizado por: %s em %s",
+                                registro.getTipo(),
+                                registro.getIdentificador(),
+                                registro.getCriadoPor(),
+                                registro.getDataCriacao() == null ? "-" : registro.getDataCriacao().format(DATA_HORA_FORMATTER),
+                                registro.getAtualizadoPor(),
+                                registro.getDataUltimaAtualizacao() == null ? "-" : registro.getDataUltimaAtualizacao().format(DATA_HORA_FORMATTER)))
+                        .toList()
+        );
     }
 
     private void limparCamposContainer() {

@@ -39,4 +39,17 @@ class UsuarioServiceTest {
         assertEquals(PerfilUsuario.COLABORADOR, service.buscarUsuario("joao").getPerfil());
         assertEquals(PerfilUsuario.ADMIN, service.buscarUsuario("luis").getPerfil());
     }
+
+    @Test
+    void deveRegistrarQuemExecutouOCadastroNoHistoricoDeAuditoria() {
+        UsuarioRepository repository = new UsuarioRepository();
+        UsuarioService service = new UsuarioService(repository);
+
+        service.cadastrarUsuario("joao", "abc123", PerfilUsuario.COLABORADOR, "João", "admin");
+
+        Usuario usuario = service.buscarUsuario("joao");
+        assertNotNull(usuario);
+        assertEquals("admin", usuario.getCriadoPor());
+        assertEquals("admin", usuario.getAtualizadoPor());
+    }
 }

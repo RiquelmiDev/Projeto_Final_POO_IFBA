@@ -2,6 +2,7 @@ package business;
 
 import data.UsuarioRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class UsuarioService extends GenericServiceImpl<Usuario, String> {
@@ -26,6 +27,10 @@ public class UsuarioService extends GenericServiceImpl<Usuario, String> {
     }
 
     public void cadastrarUsuario(String username, String senha, PerfilUsuario perfil, String nome) {
+        cadastrarUsuario(username, senha, perfil, nome, username == null ? "SISTEMA" : username.trim());
+    }
+
+    public void cadastrarUsuario(String username, String senha, PerfilUsuario perfil, String nome, String usuarioResponsavel) {
         if (username == null || username.isBlank()) {
             throw new IllegalArgumentException("Nome de usuário é obrigatório.");
         }
@@ -35,6 +40,11 @@ public class UsuarioService extends GenericServiceImpl<Usuario, String> {
 
         try {
             Usuario usuario = new Usuario(username, senha, perfil, nome);
+            String responsavel = (usuarioResponsavel == null || usuarioResponsavel.isBlank()) ? "SISTEMA" : usuarioResponsavel.trim();
+            usuario.setCreatedAt(LocalDateTime.now());
+            usuario.setCriadoPor(responsavel);
+            usuario.setUpdatedAt(LocalDateTime.now());
+            usuario.setAtualizadoPor(responsavel);
             repository.salvar(usuario);
         } catch (RegraDeNegocioException ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);

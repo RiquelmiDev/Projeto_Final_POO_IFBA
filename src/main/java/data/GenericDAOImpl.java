@@ -20,8 +20,20 @@ public abstract class GenericDAOImpl<T extends AbstractModel<ID>, ID> implements
         if (entidade.getId() == null) {
             throw new RegraDeNegocioException("Identificador da entidade é obrigatório.");
         }
-        entidade.setCreatedAt(LocalDateTime.now());
-        entidade.setCriadoPor("SISTEMA");
+
+        if (entidade.getCreatedAt() == null) {
+            entidade.setCreatedAt(LocalDateTime.now());
+        }
+        if (entidade.getCriadoPor() == null || entidade.getCriadoPor().isBlank()) {
+            entidade.setCriadoPor("SISTEMA");
+        }
+        if (entidade.getUpdatedAt() == null) {
+            entidade.setUpdatedAt(entidade.getCreatedAt());
+        }
+        if (entidade.getAtualizadoPor() == null || entidade.getAtualizadoPor().isBlank()) {
+            entidade.setAtualizadoPor(entidade.getCriadoPor());
+        }
+
         storage.put(entidade.getId(), entidade);
         return entidade.getId();
     }
@@ -34,8 +46,14 @@ public abstract class GenericDAOImpl<T extends AbstractModel<ID>, ID> implements
         if (entidade.getId() == null) {
             throw new RegraDeNegocioException("Identificador da entidade é obrigatório.");
         }
-        entidade.setUpdatedAt(LocalDateTime.now());
-        entidade.setAtualizadoPor("SISTEMA");
+
+        if (entidade.getUpdatedAt() == null) {
+            entidade.setUpdatedAt(LocalDateTime.now());
+        }
+        if (entidade.getAtualizadoPor() == null || entidade.getAtualizadoPor().isBlank()) {
+            entidade.setAtualizadoPor("SISTEMA");
+        }
+
         storage.put(entidade.getId(), entidade);
     }
 

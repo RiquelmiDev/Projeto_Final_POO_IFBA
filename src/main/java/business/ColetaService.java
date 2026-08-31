@@ -2,6 +2,7 @@ package business;
 
 import data.ColetaRepository;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -28,11 +29,24 @@ public class ColetaService extends GenericServiceImpl<Coleta, String> {
     }
 
     public void cadastrarContainer(String id, double capacidadeMaxima, String tipo, String localizacao) {
+        cadastrarContainer(id, capacidadeMaxima, tipo, localizacao, "SISTEMA");
+    }
+
+    public void cadastrarContainer(String id, double capacidadeMaxima, String tipo, String localizacao, String usuarioResponsavel) {
         Conteiner conteiner = new Conteiner(id, capacidadeMaxima, tipo, localizacao);
+        String responsavel = (usuarioResponsavel == null || usuarioResponsavel.isBlank()) ? "SISTEMA" : usuarioResponsavel.trim();
+        conteiner.setCreatedAt(LocalDateTime.now());
+        conteiner.setCriadoPor(responsavel);
+        conteiner.setUpdatedAt(LocalDateTime.now());
+        conteiner.setAtualizadoPor(responsavel);
         repository.salvarConteiner(conteiner);
     }
 
     public void registrarColeta(String containerId, String coletaId, TipoResiduo tipoResiduo, double volume) {
+        registrarColeta(containerId, coletaId, tipoResiduo, volume, "SISTEMA");
+    }
+
+    public void registrarColeta(String containerId, String coletaId, TipoResiduo tipoResiduo, double volume, String usuarioResponsavel) {
         Conteiner conteiner = repository.buscarConteiner(containerId);
         if (conteiner == null) {
             throw new IllegalArgumentException("Conteiner não encontrado.");
@@ -44,6 +58,11 @@ public class ColetaService extends GenericServiceImpl<Coleta, String> {
         }
 
         Coleta coleta = new Coleta(coletaId, containerId, tipoResiduo, volume);
+        String responsavel = (usuarioResponsavel == null || usuarioResponsavel.isBlank()) ? "SISTEMA" : usuarioResponsavel.trim();
+        coleta.setCreatedAt(LocalDateTime.now());
+        coleta.setCriadoPor(responsavel);
+        coleta.setUpdatedAt(LocalDateTime.now());
+        coleta.setAtualizadoPor(responsavel);
         repository.salvarColeta(coleta);
     }
 
