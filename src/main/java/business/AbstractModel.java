@@ -7,6 +7,8 @@ public abstract class AbstractModel<T> {
     private T id;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String criadoPor;
+    private String atualizadoPor;
 
     public T getId() {
         return id;
@@ -30,6 +32,22 @@ public abstract class AbstractModel<T> {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getCriadoPor() {
+        return criadoPor;
+    }
+
+    public void setCriadoPor(String criadoPor) {
+        this.criadoPor = criadoPor;
+    }
+
+    public String getAtualizadoPor() {
+        return atualizadoPor;
+    }
+
+    public void setAtualizadoPor(String atualizadoPor) {
+        this.atualizadoPor = atualizadoPor;
     }
 
     @Override

@@ -1,7 +1,9 @@
 package presentation;
 
+import business.Coleta;
 import business.ColetaService;
 import business.Conteiner;
+import business.GenericService;
 import business.PerfilUsuario;
 import business.Relatorio;
 import business.TipoResiduo;
@@ -41,8 +43,8 @@ public class MainApp extends Application {
     private static final DateTimeFormatter DATA_HORA_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
     private final ColetaRepository repository = new ColetaRepository();
-    private final ColetaService service = new ColetaService(repository);
-    private final UsuarioService usuarioService = new UsuarioService(new UsuarioRepository());
+    private final GenericService<Coleta, String> coletaService = new ColetaService(repository);
+    private final GenericService<Usuario, String> usuarioService = new UsuarioService(new UsuarioRepository());
 
     private Stage primaryStage;
     private Usuario usuarioLogado;
@@ -575,7 +577,7 @@ public class MainApp extends Application {
             String tipo = tipoContainerField.getText().trim();
             String localizacao = localizacaoField.getText().trim();
 
-            service.cadastrarContainer(id, capacidade, tipo, localizacao);
+            coletaService.cadastrarContainer(id, capacidade, tipo, localizacao);
             atualizarListaConteineres();
             logList.getItems().add("Conteiner " + id + " cadastrado com sucesso.");
             limparCamposContainer();
@@ -591,7 +593,7 @@ public class MainApp extends Application {
             TipoResiduo tipoResiduo = tipoResiduoCombo.getValue();
             double volume = Double.parseDouble(volumeField.getText().trim());
 
-            service.registrarColeta(containerId, coletaId, tipoResiduo, volume);
+            coletaService.registrarColeta(containerId, coletaId, tipoResiduo, volume);
             logList.getItems().add("Coleta " + coletaId + " registrada com sucesso.");
             limparCamposColeta();
             atualizarRelatorio();
@@ -601,7 +603,7 @@ public class MainApp extends Application {
     }
 
     private void atualizarRelatorio() {
-        Relatorio relatorio = service.gerarRelatorio();
+        Relatorio relatorio = coletaService.gerarRelatorio();
         relatorioArea.setText(relatorio.toString());
     }
 

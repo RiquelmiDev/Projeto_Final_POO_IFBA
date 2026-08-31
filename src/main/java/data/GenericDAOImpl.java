@@ -3,6 +3,7 @@ package data;
 import business.AbstractModel;
 import business.RegraDeNegocioException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,8 @@ public abstract class GenericDAOImpl<T extends AbstractModel<ID>, ID> implements
         if (entidade.getId() == null) {
             throw new RegraDeNegocioException("Identificador da entidade é obrigatório.");
         }
+        entidade.setCreatedAt(LocalDateTime.now());
+        entidade.setCriadoPor("SISTEMA");
         storage.put(entidade.getId(), entidade);
         return entidade.getId();
     }
@@ -31,6 +34,8 @@ public abstract class GenericDAOImpl<T extends AbstractModel<ID>, ID> implements
         if (entidade.getId() == null) {
             throw new RegraDeNegocioException("Identificador da entidade é obrigatório.");
         }
+        entidade.setUpdatedAt(LocalDateTime.now());
+        entidade.setAtualizadoPor("SISTEMA");
         storage.put(entidade.getId(), entidade);
     }
 
