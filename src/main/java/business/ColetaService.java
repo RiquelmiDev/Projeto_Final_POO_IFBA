@@ -9,11 +9,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ColetaService {
+public class ColetaService extends GenericServiceImpl<Coleta, String> {
     private final ColetaRepository repository;
 
     public ColetaService(ColetaRepository repository) {
+        super(repository);
         this.repository = repository;
+    }
+
+    @Override
+    public void validar(Coleta entidade) throws RegraDeNegocioException {
+        if (entidade == null) {
+            throw new RegraDeNegocioException("Coleta não pode ser nula.");
+        }
+        if (entidade.getId() == null || entidade.getId().isBlank()) {
+            throw new RegraDeNegocioException("Identificação da coleta é obrigatória.");
+        }
     }
 
     public void cadastrarContainer(String id, double capacidadeMaxima, String tipo, String localizacao) {

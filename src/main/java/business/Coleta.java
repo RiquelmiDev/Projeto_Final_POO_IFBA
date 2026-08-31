@@ -2,8 +2,7 @@ package business;
 
 import java.time.LocalDateTime;
 
-public class Coleta {
-    private final String id;
+public class Coleta extends AbstractModel<String> {
     private final String containerId;
     private final TipoResiduo tipoResiduo;
     private final double volume;
@@ -23,15 +22,11 @@ public class Coleta {
             throw new IllegalArgumentException("Volume da coleta deve ser positivo.");
         }
 
-        this.id = id;
+        setId(id.trim());
         this.containerId = containerId;
         this.tipoResiduo = tipoResiduo;
         this.volume = volume;
         this.dataHora = LocalDateTime.now();
-    }
-
-    public String getId() {
-        return id;
     }
 
     public String getContainerId() {

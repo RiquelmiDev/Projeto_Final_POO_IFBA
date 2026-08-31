@@ -1,7 +1,6 @@
 package business;
 
-public class Conteiner {
-    private final String id;
+public class Conteiner extends AbstractModel<String> {
     private final double capacidadeMaxima;
     private final String tipo;
     private final String localizacao;
@@ -13,14 +12,10 @@ public class Conteiner {
         if (capacidadeMaxima <= 0) {
             throw new IllegalArgumentException("Capacidade máxima deve ser positiva.");
         }
-        this.id = id;
+        setId(id.trim());
         this.capacidadeMaxima = capacidadeMaxima;
         this.tipo = tipo;
         this.localizacao = localizacao;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public double getCapacidadeMaxima() {

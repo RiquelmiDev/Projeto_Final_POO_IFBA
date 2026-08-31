@@ -8,12 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ColetaRepository {
+public class ColetaRepository extends GenericDAOImpl<Coleta, String> {
     private final Map<String, Conteiner> containers = new HashMap<>();
-    private final List<Coleta> coletas = new ArrayList<>();
 
-    public void salvarConteiner(Conteiner Conteiner) {
-        containers.put(Conteiner.getId(), Conteiner);
+    public void salvarConteiner(Conteiner conteiner) {
+        containers.put(conteiner.getId(), conteiner);
     }
 
     public Conteiner buscarConteiner(String id) {
@@ -25,15 +24,15 @@ public class ColetaRepository {
     }
 
     public void salvarColeta(Coleta coleta) {
-        coletas.add(coleta);
+        storage.put(coleta.getId(), coleta);
     }
 
     public List<Coleta> listarColetas() {
-        return new ArrayList<>(coletas);
+        return buscarTodos();
     }
 
     public double totalVolumeColetadoPorContainer(String containerId) {
-        return coletas.stream()
+        return storage.values().stream()
                 .filter(coleta -> coleta.getContainerId().equals(containerId))
                 .mapToDouble(Coleta::getVolume)
                 .sum();

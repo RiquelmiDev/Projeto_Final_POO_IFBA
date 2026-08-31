@@ -4,11 +4,25 @@ import data.UsuarioRepository;
 
 import java.util.List;
 
-public class UsuarioService {
+public class UsuarioService extends GenericServiceImpl<Usuario, String> {
     private final UsuarioRepository repository;
 
     public UsuarioService(UsuarioRepository repository) {
+        super(repository);
         this.repository = repository;
+    }
+
+    @Override
+    public void validar(Usuario entidade) throws RegraDeNegocioException {
+        if (entidade == null) {
+            throw new RegraDeNegocioException("Usuário não pode ser nulo.");
+        }
+        if (entidade.getUsername() == null || entidade.getUsername().isBlank()) {
+            throw new RegraDeNegocioException("Nome de usuário é obrigatório.");
+        }
+        if (repository.existe(entidade.getUsername().trim())) {
+            throw new RegraDeNegocioException("Usuário já cadastrado no sistema.");
+        }
     }
 
     public void cadastrarUsuario(String username, String senha, PerfilUsuario perfil, String nome) {
@@ -19,8 +33,12 @@ public class UsuarioService {
             throw new IllegalArgumentException("Usuário já cadastrado no sistema.");
         }
 
-        Usuario usuario = new Usuario(username, senha, perfil, nome);
-        repository.salvar(usuario);
+        try {
+            Usuario usuario = new Usuario(username, senha, perfil, nome);
+            repository.salvar(usuario);
+        } catch (RegraDeNegocioException ex) {
+            throw new IllegalArgumentException(ex.getMessage(), ex);
+        }
     }
 
     public Usuario autenticar(String username, String senha) {

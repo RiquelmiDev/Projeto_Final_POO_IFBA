@@ -1,6 +1,6 @@
 package business;
 
-public class Usuario {
+public class Usuario extends AbstractModel<String> {
     private final String username;
     private final String senha;
     private final PerfilUsuario perfil;
@@ -24,6 +24,7 @@ public class Usuario {
         this.senha = senha;
         this.perfil = perfil;
         this.nome = nome.trim();
+        setId(this.username);
     }
 
     public String getUsername() {
