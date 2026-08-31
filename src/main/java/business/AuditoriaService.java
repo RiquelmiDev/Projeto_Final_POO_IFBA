@@ -65,6 +65,21 @@ public class AuditoriaService {
             }
         }
 
+        if (conteineres != null) {
+            for (Object item : conteineres) {
+                if (item instanceof Conteiner conteiner) {
+                    registros.add(new RegistroAuditoria(
+                            "CONTEINER",
+                            conteiner.getId(),
+                            conteiner.getCriadoPor() == null ? "SISTEMA" : conteiner.getCriadoPor(),
+                            conteiner.getCreatedAt() == null ? LocalDateTime.now() : conteiner.getCreatedAt(),
+                            conteiner.getAtualizadoPor() == null ? "SISTEMA" : conteiner.getAtualizadoPor(),
+                            conteiner.getUpdatedAt() == null ? LocalDateTime.now() : conteiner.getUpdatedAt()
+                    ));
+                }
+            }
+        }
+
         if (coletas != null) {
             for (Coleta coleta : coletas) {
                 registros.add(new RegistroAuditoria(

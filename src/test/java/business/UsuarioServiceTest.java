@@ -32,8 +32,8 @@ class UsuarioServiceTest {
         UsuarioRepository repository = new UsuarioRepository();
         UsuarioService service = new UsuarioService(repository);
 
-        service.cadastrarUsuario("joao", "abc123", PerfilUsuario.COLABORADOR, "João");
-        service.cadastrarUsuario("luis", "senha@321", PerfilUsuario.ADMIN, "Luís");
+        service.cadastrarUsuario("joao", "abc123", PerfilUsuario.COLABORADOR, "João", "admin");
+        service.cadastrarUsuario("luis", "senha@321", PerfilUsuario.ADMIN, "Luís", "admin");
 
         assertEquals(2, service.listarUsuarios().size());
         assertEquals(PerfilUsuario.COLABORADOR, service.buscarUsuario("joao").getPerfil());
@@ -51,5 +51,21 @@ class UsuarioServiceTest {
         assertNotNull(usuario);
         assertEquals("admin", usuario.getCriadoPor());
         assertEquals("admin", usuario.getAtualizadoPor());
+    }
+
+    @Test
+    void deveBloquearCriacaoDeAdministradorSemPerfilAdmin() {
+        UsuarioRepository repository = new UsuarioRepository();
+        UsuarioService service = new UsuarioService(repository);
+
+        service.cadastrarUsuario("admin", "abc123", PerfilUsuario.ADMIN, "Admin Mestre", "SISTEMA");
+        service.cadastrarUsuario("colaborador", "senha123", PerfilUsuario.COLABORADOR, "Colaborador", "admin");
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.cadastrarUsuario("novoAdmin", "abc123", PerfilUsuario.ADMIN, "Novo Admin", "colaborador")
+        );
+
+        assertTrue(exception.getMessage().contains("administrador"));
     }
 }

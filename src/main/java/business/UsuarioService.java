@@ -27,7 +27,21 @@ public class UsuarioService extends GenericServiceImpl<Usuario, String> {
     }
 
     public void cadastrarUsuario(String username, String senha, PerfilUsuario perfil, String nome) {
-        cadastrarUsuario(username, senha, perfil, nome, username == null ? "SISTEMA" : username.trim());
+        cadastrarUsuario(username, senha, perfil, nome, "SISTEMA");
+    }
+
+    private boolean existeAdministradorCadastrado() {
+        return repository.listar().stream().anyMatch(usuario -> usuario.getPerfil() == PerfilUsuario.ADMIN);
+    }
+
+    private void validarCadastroAdmin(String usuarioResponsavel) {
+        if (existeAdministradorCadastrado()) {
+            String responsavel = (usuarioResponsavel == null || usuarioResponsavel.isBlank()) ? "SISTEMA" : usuarioResponsavel.trim();
+            Usuario usuarioAdmin = repository.buscar(responsavel);
+            if (usuarioAdmin == null || usuarioAdmin.getPerfil() != PerfilUsuario.ADMIN) {
+                throw new IllegalArgumentException("Cadastro de administrador só pode ser realizado por um usuário administrador autenticado.");
+            }
+        }
     }
 
     public void cadastrarUsuario(String username, String senha, PerfilUsuario perfil, String nome, String usuarioResponsavel) {
@@ -36,6 +50,9 @@ public class UsuarioService extends GenericServiceImpl<Usuario, String> {
         }
         if (repository.existe(username.trim())) {
             throw new IllegalArgumentException("Usuário já cadastrado no sistema.");
+        }
+        if (perfil == PerfilUsuario.ADMIN) {
+            validarCadastroAdmin(usuarioResponsavel);
         }
 
         try {
@@ -46,6 +63,38 @@ public class UsuarioService extends GenericServiceImpl<Usuario, String> {
             usuario.setUpdatedAt(LocalDateTime.now());
             usuario.setAtualizadoPor(responsavel);
             repository.salvar(usuario);
+        } catch (RegraDeNegocioException ex) {
+            throw new IllegalArgumentException(ex.getMessage(), ex);
+        }
+    }
+
+    public void atualizarUsuario(String username, String novaSenha, PerfilUsuario novoPerfil, String novoNome, String usuarioResponsavel) {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("Informe o usuário que será atualizado.");
+        }
+
+        Usuario usuario = repository.buscar(username.trim());
+        if (usuario == null) {
+            throw new IllegalArgumentException("Usuário não encontrado para atualização.");
+        }
+
+        if (novoPerfil == PerfilUsuario.ADMIN) {
+            String responsavel = (usuarioResponsavel == null || usuarioResponsavel.isBlank()) ? "SISTEMA" : usuarioResponsavel.trim();
+            Usuario usuarioLogado = repository.buscar(responsavel);
+            if (usuarioLogado == null || usuarioLogado.getPerfil() != PerfilUsuario.ADMIN) {
+                throw new IllegalArgumentException("Cadastro de administrador só pode ser realizado por um usuário administrador autenticado.");
+            }
+        }
+
+        try {
+            Usuario atualizado = new Usuario(username.trim(), novaSenha == null ? usuario.getSenha() : novaSenha,
+                    novoPerfil == null ? usuario.getPerfil() : novoPerfil,
+                    novoNome == null || novoNome.isBlank() ? usuario.getNome() : novoNome);
+            atualizado.setCreatedAt(usuario.getCreatedAt());
+            atualizado.setCriadoPor(usuario.getCriadoPor() == null ? "SISTEMA" : usuario.getCriadoPor());
+            atualizado.setUpdatedAt(LocalDateTime.now());
+            atualizado.setAtualizadoPor((usuarioResponsavel == null || usuarioResponsavel.isBlank()) ? "SISTEMA" : usuarioResponsavel.trim());
+            repository.salvar(atualizado);
         } catch (RegraDeNegocioException ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);
         }

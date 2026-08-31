@@ -30,4 +30,19 @@ class AuditoriaServiceTest {
         assertTrue(registros.stream().anyMatch(r -> r.getIdentificador().equals("joao") && r.getCriadoPor().equals("admin")));
         assertTrue(registros.stream().anyMatch(r -> r.getIdentificador().equals("C-001") && r.getAtualizadoPor().equals("joao")));
     }
+
+    @Test
+    void deveIncluirContenedoresNaAuditoria() {
+        Conteiner conteiner = new Conteiner("C-001", 100.0, "Reciclável", "Bloco A");
+        conteiner.setCreatedAt(LocalDateTime.of(2024, 3, 5, 8, 0));
+        conteiner.setCriadoPor("admin");
+        conteiner.setUpdatedAt(LocalDateTime.of(2024, 3, 5, 9, 15));
+        conteiner.setAtualizadoPor("admin");
+
+        AuditoriaService service = new AuditoriaService();
+        List<AuditoriaService.RegistroAuditoria> registros = service.listarAuditoria(List.of(), List.of(conteiner), List.of());
+
+        assertEquals(1, registros.size());
+        assertTrue(registros.stream().anyMatch(r -> r.getTipo().equals("CONTEINER") && r.getIdentificador().equals("C-001")));
+    }
 }

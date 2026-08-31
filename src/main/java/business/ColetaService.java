@@ -42,6 +42,22 @@ public class ColetaService extends GenericServiceImpl<Coleta, String> {
         repository.salvarConteiner(conteiner);
     }
 
+    public void atualizarContainer(String id, double novaCapacidadeMaxima, String novoTipo, String novaLocalizacao, String usuarioResponsavel) {
+        Conteiner conteiner = repository.buscarConteiner(id);
+        if (conteiner == null) {
+            throw new IllegalArgumentException("Conteiner não encontrado para atualização.");
+        }
+
+        Conteiner atualizado = new Conteiner(id, novaCapacidadeMaxima,
+                novoTipo == null || novoTipo.isBlank() ? conteiner.getTipo() : novoTipo,
+                novaLocalizacao == null || novaLocalizacao.isBlank() ? conteiner.getLocalizacao() : novaLocalizacao);
+        atualizado.setCreatedAt(conteiner.getCreatedAt());
+        atualizado.setCriadoPor(conteiner.getCriadoPor() == null ? "SISTEMA" : conteiner.getCriadoPor());
+        atualizado.setUpdatedAt(LocalDateTime.now());
+        atualizado.setAtualizadoPor((usuarioResponsavel == null || usuarioResponsavel.isBlank()) ? "SISTEMA" : usuarioResponsavel.trim());
+        repository.salvarConteiner(atualizado);
+    }
+
     public void registrarColeta(String containerId, String coletaId, TipoResiduo tipoResiduo, double volume) {
         registrarColeta(containerId, coletaId, tipoResiduo, volume, "SISTEMA");
     }
@@ -64,6 +80,22 @@ public class ColetaService extends GenericServiceImpl<Coleta, String> {
         coleta.setUpdatedAt(LocalDateTime.now());
         coleta.setAtualizadoPor(responsavel);
         repository.salvarColeta(coleta);
+    }
+
+    public void atualizarColeta(String coletaId, String novoContainerId, TipoResiduo novoTipoResiduo, double novoVolume, String usuarioResponsavel) {
+        Coleta coleta = repository.buscarPorId(coletaId);
+        if (coleta == null) {
+            throw new IllegalArgumentException("Coleta não encontrada para atualização.");
+        }
+
+        Coleta atualizada = new Coleta(coletaId, novoContainerId == null || novoContainerId.isBlank() ? coleta.getContainerId() : novoContainerId,
+                novoTipoResiduo == null ? coleta.getTipoResiduo() : novoTipoResiduo,
+                novoVolume <= 0 ? coleta.getVolume() : novoVolume);
+        atualizada.setCreatedAt(coleta.getCreatedAt());
+        atualizada.setCriadoPor(coleta.getCriadoPor() == null ? "SISTEMA" : coleta.getCriadoPor());
+        atualizada.setUpdatedAt(LocalDateTime.now());
+        atualizada.setAtualizadoPor((usuarioResponsavel == null || usuarioResponsavel.isBlank()) ? "SISTEMA" : usuarioResponsavel.trim());
+        repository.salvarColeta(atualizada);
     }
 
     public List<Coleta> listarColetasOrdenadasPorPrioridade() {

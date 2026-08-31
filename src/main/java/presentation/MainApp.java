@@ -146,11 +146,7 @@ public class MainApp extends Application {
         entrarButton.setOnAction(event -> autenticarUsuario());
         entrarButton.setStyle("-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 8 18 8 18;");
 
-        Button cadastrarNoLoginButton = new Button("Cadastrar usuário");
-        cadastrarNoLoginButton.setOnAction(event -> abrirTelaCadastroUsuario());
-        cadastrarNoLoginButton.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 8 18 8 18;");
-
-        HBox botoesBox = new HBox(12, entrarButton, cadastrarNoLoginButton);
+        HBox botoesBox = new HBox(12, entrarButton);
         botoesBox.setAlignment(Pos.CENTER_RIGHT);
 
         VBox loginContent = new VBox(12);
@@ -499,6 +495,11 @@ public class MainApp extends Application {
     }
 
     private void abrirTelaCadastroUsuario() {
+        if (usuarioLogado == null || usuarioLogado.getPerfil() != PerfilUsuario.ADMIN) {
+            mostrarErro("A criação de usuários ADMIN só pode ser feita por um administrador autenticado.");
+            return;
+        }
+
         Stage janela = new Stage();
         janela.initOwner(primaryStage);
         janela.initModality(Modality.WINDOW_MODAL);
@@ -526,6 +527,12 @@ public class MainApp extends Application {
         perfilField.getItems().setAll(PerfilUsuario.values());
         perfilField.setValue(PerfilUsuario.COLABORADOR);
         perfilField.setPrefWidth(280);
+
+        if (usuarioLogado != null && usuarioLogado.getPerfil() == PerfilUsuario.ADMIN) {
+            perfilField.getItems().setAll(PerfilUsuario.values());
+        } else {
+            perfilField.getItems().setAll(PerfilUsuario.COLABORADOR);
+        }
 
         Label nomeLabel = new Label("Nome completo");
         nomeLabel.setTextFill(Color.web("#e5e7eb"));
