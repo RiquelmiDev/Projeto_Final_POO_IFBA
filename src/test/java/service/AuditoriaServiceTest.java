@@ -1,5 +1,10 @@
-package business;
+package service;
 
+import model.Coleta;
+import model.Conteiner;
+import model.PerfilUsuario;
+import model.TipoResiduo;
+import model.Usuario;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;

@@ -1,15 +1,14 @@
 package presentation;
 
-import business.AuditoriaService;
-import business.Coleta;
-import business.ColetaService;
-import business.Conteiner;
-import business.GenericService;
-import business.PerfilUsuario;
-import business.Relatorio;
-import business.TipoResiduo;
-import business.Usuario;
-import business.UsuarioService;
+import model.Coleta;
+import model.Conteiner;
+import model.PerfilUsuario;
+import model.Relatorio;
+import model.TipoResiduo;
+import model.Usuario;
+import service.AuditoriaService;
+import service.ColetaService;
+import service.UsuarioService;
 import data.ColetaRepository;
 import data.UsuarioRepository;
 import javafx.application.Application;

@@ -1,4 +1,12 @@
-package business;
+package service;
+
+import exception.RegraDeNegocioException;
+import model.AbstractModel;
+import model.Coleta;
+import model.PerfilUsuario;
+import model.Relatorio;
+import model.TipoResiduo;
+import model.Usuario;
 
 import java.util.List;
 

@@ -1,6 +1,8 @@
-package business;
+package service;
 
 import data.UsuarioRepository;
+import model.PerfilUsuario;
+import model.Usuario;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

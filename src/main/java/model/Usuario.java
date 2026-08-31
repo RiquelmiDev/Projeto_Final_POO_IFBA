@@ -1,4 +1,4 @@
-package business;
+package model;
 
 public class Usuario extends AbstractModel<String> {
     private final String username;

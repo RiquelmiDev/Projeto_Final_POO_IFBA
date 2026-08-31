@@ -1,7 +1,7 @@
 package data;
 
-import business.Coleta;
-import business.Conteiner;
+import model.Coleta;
+import model.Conteiner;
 
 import java.util.ArrayList;
 import java.util.HashMap;

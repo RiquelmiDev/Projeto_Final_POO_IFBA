@@ -1,6 +1,8 @@
-package business;
+package service;
 
 import data.ColetaRepository;
+import model.Relatorio;
+import model.TipoResiduo;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

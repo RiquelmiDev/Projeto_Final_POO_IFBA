@@ -1,4 +1,4 @@
-package business;
+package model;
 
 public class FuncionarioLogado {
     private final Usuario usuario;

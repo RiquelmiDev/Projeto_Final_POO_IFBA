@@ -1,7 +1,7 @@
 package data;
 
-import business.RegraDeNegocioException;
-import business.Usuario;
+import exception.RegraDeNegocioException;
+import model.Usuario;
 
 import java.util.List;
 

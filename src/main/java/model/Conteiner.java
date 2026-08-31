@@ -1,4 +1,4 @@
-package business;
+package model;
 
 public class Conteiner extends AbstractModel<String> {
     private final double capacidadeMaxima;
