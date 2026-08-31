@@ -1,21 +1,57 @@
 @startuml
 actor Usuario
-participant "Apresentação (JavaFX)" as UI
-participant "Serviço de Coleta" as Service
-participant "Repositório" as Repository
+participant "MainApp (JavaFX)" as UI
+participant "UsuarioService" as UsuarioService
+participant "UsuarioRepository" as UsuarioRepo
+participant "ColetaService" as ColetaService
+participant "ColetaRepository" as ColetaRepo
+participant "AuditoriaService" as AuditoriaService
+
+Usuario -> UI: acessa sistema
+UI -> UsuarioService: autenticar(username, senha)
+UsuarioService -> UsuarioRepo: buscar(username)
+UsuarioRepo --> UsuarioService: Usuario
+alt credenciais válidas
+  UsuarioService --> UI: Usuario autenticado
+  UI -> UI: verifica perfil (ADMIN / COLABORADOR)
+  UI --> Usuario: exibe dashboard e módulos permitidos
+else credenciais inválidas
+  UsuarioService --> UI: IllegalArgumentException
+  UI --> Usuario: exibe erro de login
+end
+
+Usuario -> UI: cadastra usuário
+UI -> UsuarioService: cadastrarUsuario(username, senha, perfil, nome, usuarioLogado)
+UsuarioService -> UsuarioRepo: salvar(usuario)
+UsuarioRepo --> UsuarioService: confirmação
+UsuarioService --> UI: sucesso
+UI --> Usuario: mensagem de cadastro
+
+Usuario -> UI: cadastra contêiner
+UI -> ColetaService: cadastrarContainer(id, capacidade, tipo, localizacao, usuarioLogado)
+ColetaService -> ColetaRepo: salvarConteiner(conteiner)
+ColetaRepo --> ColetaService: confirmação
+ColetaService --> UI: sucesso
+UI --> Usuario: mensagem de cadastro do contêiner
 
 Usuario -> UI: registra coleta
-UI -> Service: registrarColeta(containerId, coletaId, tipoResiduo, volume)
-Service -> Repository: buscarConteiner(containerId)
-Repository --> Service: Conteiner
-Service -> Service: valida capacidade e prioridade
-alt tudo válido
-  Service -> Repository: salvarColeta(coleta)
-  Repository --> Service: confirmação
-  Service --> UI: sucesso
-  UI --> Usuario: exibe mensagem de sucesso
-else erro
-  Service --> UI: IllegalArgumentException
-  UI --> Usuario: exibe mensagem de erro
+UI -> ColetaService: registrarColeta(containerId, coletaId, tipoResiduo, volume, usuarioLogado)
+ColetaService -> ColetaRepo: buscarConteiner(containerId)
+ColetaRepo --> ColetaService: Conteiner
+ColetaService -> ColetaService: valida capacidade máxima
+alt operação válida
+  ColetaService -> ColetaRepo: salvarColeta(coleta)
+  ColetaRepo --> ColetaService: confirmação
+  ColetaService --> UI: sucesso
+  UI --> Usuario: mensagem de coleta registrada
+else operação inválida
+  ColetaService --> UI: IllegalArgumentException
+  UI --> Usuario: exibe erro
 end
+
+Usuario -> UI: acessa auditoria
+UI -> AuditoriaService: listarAuditoria(usuarios, conteineres, coletas)
+AuditoriaService -> AuditoriaService: ordena por dataUltimaAtualizacao desc
+AuditoriaService --> UI: lista de registros
+UI --> Usuario: mostra histórico com usuário responsável
 @enduml

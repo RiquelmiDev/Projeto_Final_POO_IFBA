@@ -1,26 +1,33 @@
 @startuml
-class Conteiner {
-  - id: String
-  - capacidadeMaxima: double
-  - tipo: String
-  - localizacao: String
-  + Conteiner(id, capacidadeMaxima, tipo, localizacao)
+skinparam classAttributeIconSize 0
+
+class MainApp {
+  + start(Stage)
+  + autenticarUsuario()
+  + abrirTelaCadastroUsuario()
+  + cadastrarUsuarioSistema()
+  + cadastrarConteiner()
+  + registrarColeta()
+  + atualizarAuditoria()
 }
 
-class Coleta {
-  - id: String
-  - containerId: String
-  - tipoResiduo: TipoResiduo
-  - volume: double
-  - dataHora: LocalDateTime
-  + Coleta(id, containerId, tipoResiduo, volume)
+abstract class AbstractModel<T> {
+  - id: T
+  - createdAt: LocalDateTime
+  - updatedAt: LocalDateTime
+  - criadoPor: String
+  - atualizadoPor: String
+  + getId()
+  + setId()
+  + getCreatedAt()
+  + setUpdatedAt()
+  + getCriadoPor()
+  + getAtualizadoPor()
 }
 
-class Relatorio {
-  - totalColetas: int
-  - volumeTotal: double
-  - taxaReciclagem: double
-  + Relatorio(totalColetas, volumeTotal, taxaReciclagem)
+enum PerfilUsuario {
+  COLABORADOR
+  ADMIN
 }
 
 enum TipoResiduo {
@@ -30,7 +37,140 @@ enum TipoResiduo {
   NAO_RECICLAVEL
 }
 
-Conteiner --> Coleta
+class Usuario {
+  - username: String
+  - senha: String
+  - perfil: PerfilUsuario
+  - nome: String
+  + Usuario(username, senha, perfil, nome)
+  + validarSenha(senhaInformada): boolean
+}
+
+class Conteiner {
+  - capacidadeMaxima: double
+  - tipo: String
+  - localizacao: String
+  + Conteiner(id, capacidadeMaxima, tipo, localizacao)
+}
+
+class Coleta {
+  - containerId: String
+  - tipoResiduo: TipoResiduo
+  - volume: double
+  + Coleta(id, containerId, tipoResiduo, volume)
+  + isPerigoso(): boolean
+}
+
+class Relatorio {
+  - totalColetas: int
+  - volumeTotal: double
+  - taxaReciclagem: double
+  - totalConteineres: int
+  - totalColetasPerigosas: int
+  - volumePorTipo: Map<TipoResiduo, Double>
+  - volumePorContainer: Map<String, Double>
+  + Relatorio(...)
+}
+
+class AuditoriaService {
+  + listarAuditoria(usuarios, conteineres, coletas): List<RegistroAuditoria>
+}
+
+class AuditoriaService::RegistroAuditoria {
+  - tipo: String
+  - identificador: String
+  - criadoPor: String
+  - dataCriacao: LocalDateTime
+  - atualizadoPor: String
+  - dataUltimaAtualizacao: LocalDateTime
+}
+
+interface GenericDAO<T, ID> {
+  + salvar(entidade): ID
+  + atualizar(entidade)
+  + buscarPorId(id): T
+  + deletar(id)
+  + buscarTodos(): List<T>
+}
+
+abstract class GenericDAOImpl<T extends AbstractModel<ID>, ID> {
+  # storage: Map<ID, T>
+  + salvar(entidade): ID
+  + atualizar(entidade)
+  + buscarPorId(id): T
+  + deletar(id)
+  + buscarTodos(): List<T>
+}
+
+interface GenericService<T, ID> {
+  + salvar(entidade): ID
+  + atualizar(entidade)
+  + buscarPorId(id): T
+  + deletar(id)
+  + buscarTodos(): List<T>
+}
+
+abstract class GenericServiceImpl<T extends AbstractModel<ID>, ID> {
+  # dao: GenericDAO<T, ID>
+  + salvar(entidade): ID
+  + atualizar(entidade)
+  + buscarPorId(id): T
+  + deletar(id)
+  + buscarTodos(): List<T>
+}
+
+class UsuarioRepository {
+  + buscar(username): Usuario
+  + existe(username): boolean
+  + listar(): List<Usuario>
+  + remover(username)
+}
+
+class ColetaRepository {
+  + salvarConteiner(conteiner)
+  + buscarConteiner(id): Conteiner
+  + listarConteineres(): List<Conteiner>
+  + salvarColeta(coleta)
+  + listarColetas(): List<Coleta>
+  + totalVolumeColetadoPorContainer(id): double
+}
+
+class UsuarioService {
+  + cadastrarUsuario(username, senha, perfil, nome)
+  + cadastrarUsuario(username, senha, perfil, nome, usuarioResponsavel)
+  + autenticar(username, senha): Usuario
+  + listarUsuarios(): List<Usuario>
+  + removerUsuario(username)
+}
+
+class ColetaService {
+  + cadastrarContainer(id, capacidadeMaxima, tipo, localizacao)
+  + cadastrarContainer(id, capacidadeMaxima, tipo, localizacao, usuarioResponsavel)
+  + registrarColeta(containerId, coletaId, tipoResiduo, volume)
+  + registrarColeta(containerId, coletaId, tipoResiduo, volume, usuarioResponsavel)
+  + gerarRelatorio(): Relatorio
+  + listarColetasOrdenadasPorPrioridade(): List<Coleta>
+}
+
+AbstractModel <|-- Usuario
+AbstractModel <|-- Conteiner
+AbstractModel <|-- Coleta
+Usuario --> PerfilUsuario
 Coleta --> TipoResiduo
+Conteiner --> Coleta
 Relatorio --> Coleta
+AuditoriaService --> Usuario
+AuditoriaService --> Coleta
+AuditoriaService --> Conteiner
+
+GenericDAO <|.. GenericDAOImpl
+GenericService <|.. GenericServiceImpl
+GenericDAOImpl <|-- UsuarioRepository
+GenericDAOImpl <|-- ColetaRepository
+GenericServiceImpl <|-- UsuarioService
+GenericServiceImpl <|-- ColetaService
+
+MainApp --> UsuarioService
+MainApp --> ColetaService
+MainApp --> AuditoriaService
 @enduml
